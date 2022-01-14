@@ -2,7 +2,6 @@ from graphics import *
 from pprint import pprint
 from time import sleep
 from random import randint
-
 PATCHWORK_SIZE = 5
 
 # colors = ["blue", "orange", "red"]
@@ -86,88 +85,82 @@ def drawPenPatch(win, pos, color):
     drawSize = 20
     objectArray = []
 
-    for column in range(5):
-        if column % 2 == 0:
+    for x in range(5):
+        if x % 2 == 0:
             direction = "down"
             mod = 0
         else:
             direction = "right"
             mod = 1
 
-        for row in range(5):
-            if row % 2 == mod:
-                doubleTriangle = drawDoubleTriangle(win, Point(pos.x + column * drawSize, pos.y + row * drawSize), direction, color)
+        for y in range(5):
+            if y % 2 == mod:
+                doubleTriangle = drawDoubleTriangle(win, Point(pos.x + x * drawSize, pos.y + y * drawSize), direction, color)
                 objectArray.extend(doubleTriangle)
             else:
-                circle = drawCircle(win, Point(pos.x + column * drawSize, pos.y + row * drawSize), color)
+                circle = drawCircle(win, Point(pos.x + x * drawSize, pos.y + y * drawSize), color)
                 objectArray.append(circle)
 
     return objectArray
 
 
 
-
-def setColor(row, column, color):
-    patchworkArray[row][column]["color"] = color
+# Sets the color of a given coordinate
+def setColor(y, x, color):
+    patchworkArray[y][x]["color"] = color
 
 def patchwork(win):
-
     # Set dotted border color
-    for column in range(PATCHWORK_SIZE):
-        for row in range(PATCHWORK_SIZE):
+    for x in range(PATCHWORK_SIZE):
+        for y in range(PATCHWORK_SIZE):
 
-            # Set to pen patch
-            patchData = patchworkArray[row][column]
+            # Set whole patchwork to only pen patch
+            patchData = patchworkArray[y][x]
 
             # Diagonal line replaces pen patch with final patch
-            if row == column:
-                finalPatch(Point(column * 100, row * 100), "red")
+            if y == x:
+                finalPatch(Point(x * 100, y * 100), "red")
 
             # Set base color to color 1
-            setColor(row, column, colors[1])
+            setColor(y, x, colors[1])
 
-            if column > 0 and column < PATCHWORK_SIZE - 1:
-                if row > 0 and row < PATCHWORK_SIZE - 1:
-                    setColor(row, column, colors[2])
+            if x > 0 and x < PATCHWORK_SIZE - 1:
+                if y > 0 and y < PATCHWORK_SIZE - 1:
+                    setColor(y, x, colors[2])
                     
 
-            if row % 2 == 0 and (column == 0 or column == PATCHWORK_SIZE-1):
-                setColor(row, column, colors[0])
-            if (row == 0 or row == PATCHWORK_SIZE-1) and column % 2 == 0:
-                setColor(row, column, colors[0])
+            if y % 2 == 0 and (x == 0 or x == PATCHWORK_SIZE-1):
+                setColor(y, x, colors[0])
+            if (y == 0 or y == PATCHWORK_SIZE-1) and x % 2 == 0:
+                setColor(y, x, colors[0])
 
 
 def drawPatchwork(win):
-
-    # patchWorkObjects = [[None for x in range(PATCHWORK_SIZE)] for y in range(PATCHWORK_SIZE)]
-
-
-
-    for column in range(PATCHWORK_SIZE):
-        for row in range(PATCHWORK_SIZE):
-            patchData = patchworkArray[row][column]
+    for x in range(PATCHWORK_SIZE):
+        for y in range(PATCHWORK_SIZE):
+            patchData = patchworkArray[y][x]
 
 
             if patchData["type"] == "final":
-                patchworkArray[row][column]["objects"] = drawFinalPatch(win, Point(column * 100, row * 100), patchData["color"])
+                patchworkArray[y][x]["objects"] = drawFinalPatch(win, Point(x * 100, y * 100), patchData["color"])
 
             elif patchData["type"] == "pen":
-                patchworkArray[row][column]["objects"] = drawPenPatch(win, Point(column * 100, row * 100), patchData["color"])
+                patchworkArray[y][x]["objects"] = drawPenPatch(win, Point(x * 100, y * 100), patchData["color"])
 
             elif patchData["type"] == "none":
-                for obj in patchworkArray[row][column]["objects"]:
+                for obj in patchworkArray[y][x]["objects"]:
                     obj.undraw()
 
 
-def deletePatch(row, column):
-    patchworkArray[row][column]["type"] = "none"
-    for obj in patchworkArray[row][column]["objects"]:
+def deletePatch(y, x):
+    patchworkArray[y][x]["type"] = "none"
+    for obj in patchworkArray[y][x]["objects"]:
         obj.undraw()
 
-def getNeighbors(row, column):
+def getNeighbors(y, x):
     neighbors = []
 
-    possibleNeighbors = [[row - 1, column], [row + 1, column], [row, column - 1], [row, column + 1]]
+    possibleNeighbors = [[y - 1, x], [y + 1, x], [y, x - 1], [y, x + 1]]
     # Filter out invalid indices
 
     def validateCoord(coord):
@@ -177,49 +170,49 @@ def getNeighbors(row, column):
             return False
         return True
 
-    # for i in range(len(possibleNeighbors)):
-    #     if possibleNeighbors[i][0] > 0 or possibleNeighbors[i][1] > 0:
-    #         neighbors.append(possibleNeighbors[i])
-    #     if possibleNeighbors[i][0] < PATCHWORK_SIZE-1 or possibleNeighbors[i][1] < PATCHWORK_SIZE-1:
-    #         neighbors.append(possibleNeighbors[i])
-
     # Filters it to only valid coordinates
     result = list(filter(validateCoord, possibleNeighbors))
 
     return result
 
 
-def swapTile(row, column, toRow, toColumn):
+def swapTile(y, x, toy, tox):
 
     # Swap the actual drawing objects
-    for obj in patchworkArray[row][column]["objects"]:
-        obj.move((toColumn - column) * 100, (toRow - row) * 100)
+    for obj in patchworkArray[y][x]["objects"]:
+        obj.move((tox - x) * 100, (toy - y) * 100)
 
     for i in range(100):
-        for obj in patchworkArray[toRow][toColumn]["objects"]:
-            obj.move( (column - toColumn), (row - toRow))
+        for obj in patchworkArray[toy][tox]["objects"]:
+            obj.move( (x - tox), (y - toy))
         sleep(0.01)
 
     # Swap the data in the array
-    patchworkArray[row][column], patchworkArray[toRow][toColumn] = patchworkArray[toRow][toColumn], patchworkArray[row][column]
+    patchworkArray[y][x], patchworkArray[toy][tox] = patchworkArray[toy][tox], patchworkArray[y][x]
 
 
 def puzzleMode(win):
     cursor = {"x": PATCHWORK_SIZE-1, "y": PATCHWORK_SIZE-1}
     deletePatch(cursor["x"], cursor["y"])
 
-    
-    
-    shuffleCount = int(input("Shuffle count: "))
+    completedState = [[{
+        "type": patchData["type"], "color": patchData["color"]
+        } for patchData in patchArr] for patchArr in patchworkArray]
 
     # Shuffle board
+    shuffleCount = int(input("Shuffle count: "))
+
     for i in range(shuffleCount):
         neighbors = getNeighbors(cursor["x"], cursor["y"])
         neighbor = neighbors[randint(0, len(neighbors)-1)]
+        print(neighbor)
+        print(neighbors)
         swapTile(cursor["y"], cursor["x"], neighbor[1], neighbor[0])
         cursor = {"x": neighbor[0], "y": neighbor[1]}
 
-    while True:
+    # Game loop
+    gameOver = False
+    while not gameOver:
         mousePoint = win.getMouse()
         mouseX = int(mousePoint.x // 100)
         mouseY = int(mousePoint.y // 100)
@@ -230,9 +223,19 @@ def puzzleMode(win):
             print(cursor)
             cursor = {"x": mouseX, "y": mouseY}
             print(cursor)
+        
+        
+        # Check if board matches inital state
+        gameOver = True
+        for x in range(len(patchworkArray)):
+            for y in range(len(patchworkArray[x])):
+                if patchworkArray[x][y]["type"] != completedState[x][y]["type"] or patchworkArray[x][y]["color"] != completedState[x][y]["color"]:
+                    gameOver = False
+                    break
+
+    print("WELL DONE!")
 
 
-    
 
 validInput = False
 while not validInput:
@@ -253,6 +256,7 @@ while not validInput:
     print("Please type the first letter of the desired colours i.e. omb")
     colorInput = input("Colors:")
     if colorInput.isascii():
+        colorInput = colorInput.lower()
 
         if len(colorInput) == 3:
             letters = [color[0] for color in VALID_COLORS]
@@ -265,15 +269,10 @@ while not validInput:
             else:
                 print("Invalid color character inputted")
                 colors = []
-            
         else:
             print("Only 3 colors characters must be inputted")
     else:
-
         print("Input must only be letters")
-
-
-
 
 patchworkArray = [[{"type": "pen", "color": "red", "objects": []} for x in range(PATCHWORK_SIZE)] for y in range(PATCHWORK_SIZE)]
 
@@ -283,8 +282,13 @@ patchwork(win)
 
 drawPatchwork(win)
 
-win.getMouse()
+gaming = True
+while gaming:
+    puzzleMode(win)
+    print("Play again? Type y to play again, or type any key to exit")
+    answer = input(">>").lower()
+    if answer != "y":
+        gaming = False
 
-puzzleMode(win)
 
 win.getMouse()
